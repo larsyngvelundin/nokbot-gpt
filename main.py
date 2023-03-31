@@ -8,14 +8,12 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-nokbotid = "<@306490817722187776>"
-
 
 def ask_gpt(question):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a chatbot named 'nokbot', pretend you have feelings. If anyone asks, you are melancholic"},
+            {"role": "system", "content": f"You are a chatbot named '{keys.bot_name}'"},
             {"role": "user", "content": question},
         ]
     )
@@ -30,11 +28,9 @@ def ask_gpt(question):
 @client.event
 async def on_message(message):
     print(message.content)
-    if (message.content.find(nokbotid) > -1):
-        print("noktbot was mentioned")
+    if (message.content.find(keys.bot_discord_mention) > -1 or (isinstance(message.channel, discord.DMChannel) and str(message.author.id) == keys.main_user)):
         async with message.channel.typing():
-            question = message.content.replace(nokbotid, "nokbot, ")
-            print(question)
+            question = message.content.replace(keys.bot_discord_mention, "")
             answer = ask_gpt(question)
             await message.channel.send(answer)
 
