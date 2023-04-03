@@ -19,8 +19,8 @@ Information needed for keys.py
     - What you want your bot to respond to in public channels, I used a mention formatted as "<@111111111111111>"
 - bot_name
     - Just what you want your bot to be referred to as
-- main_user
-    - The Discord ID of the user able to DM the bot
+- main_users
+    - The Discord IDs of the users able to DM the bot
 
 
 ![Image of a chat between user and nokbot-GPT](https://github.com/larsyngvelundin/nokbot-gpt/blob/main/readme.png?raw=true)
