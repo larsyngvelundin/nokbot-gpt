@@ -10,20 +10,30 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 
-def ask_gpt(question, model):
+async def ask_gpt(question, model, message):
     openai.api_key = keys.openai
+    history = []
+    async for msg in message.channel.history(limit=50):
+        agent = "assistant"
+        if (msg.author.id == message.author.id):
+            agent = "user"
+        history.append({"role": agent, "content": msg.content})
+        if (msg.content.find("and") != 0 and msg.content.find("And") != 0):
+            if (message.author.id == msg.author.id):
+                break
+    messages = [
+        {"role": "system", "content": f"You are a chatbot named '{keys.bot_name}'"}]
+    for i in range(len(history)-1, -1, -1):
+        messages.append(history[i])
+
     response = openai.ChatCompletion.create(
         model=model,
-        messages=[
-            {"role": "system", "content": f"You are a chatbot named '{keys.bot_name}'"},
-            {"role": "user", "content": question},
-        ]
+        messages=messages
     )
 
     result = ''
     for choice in response.choices:
         result += choice.message.content
-
     return (result)
 
 
@@ -32,7 +42,7 @@ async def reply_to_message(message, model):
         async with message.channel.typing():
             question = message.content.replace(
                 keys.bot_discord_mention, "")
-            answer = ask_gpt(question, model)
+            answer = await ask_gpt(question, model, message)
             await message.channel.send(answer)
     except Exception as e:
         print(e)
@@ -67,9 +77,8 @@ async def reply_with_image(message):
             await reply_with_image(message)
 
 
-@client.event
+@ client.event
 async def on_message(message):
-    print(message.content)
     if (message.content.find("!generate") == 0 and str(message.author.id) in keys.main_users):
         await reply_with_image(message)
     elif (message.content.find(keys.bot_discord_mention) > -1):
@@ -78,7 +87,7 @@ async def on_message(message):
         await reply_to_message(message, "gpt-3.5-turbo")
 
 
-@client.event
+@ client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
 
